@@ -24,6 +24,7 @@ public class RobotContainer {
 
   // First we do things that are in all Robots.
   private PowerDistribution pdp = new PowerDistribution();
+
   // The driver's controller
   private CommandXboxController operatorController =
       new CommandXboxController(OIConstants.OPERATOR_CONTROLLER_PORT);
@@ -55,10 +56,10 @@ public class RobotContainer {
                 .runLauncher(Constants.IntakeLauncherConstants.LAUNCHER_FULL_SPEED)
                 .withName("Launcher: Run Full Speed"));
 
-    // Move the elevator to the high position when the 'B' button is pressed.
-    operatorController
-        .rightTrigger()
-        .onFalse(robotLauncher.runLauncher(0).withName("Launcher: Stop"));
+    // Stop the launcher when the right trigger is released.
+    // operatorController
+    //     .rightTrigger()
+    //     .onFalse(robotLauncher.runLauncher(0).withName("Launcher: Stop"));
   }
 
   /**

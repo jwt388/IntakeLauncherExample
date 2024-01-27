@@ -67,7 +67,7 @@ class IntakeLauncherSubsystemTest {
   }
 
   @Test
-  @DisplayName("Test run command and stop.")
+  @DisplayName("Test run command and disable.")
   void testMoveCommand() {
 
     // Create a command to run the launcher then initialize

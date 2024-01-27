@@ -15,8 +15,11 @@ public final class Constants {
       throw new IllegalStateException("IntakeLauncherSimConstants Utility Class");
     }
 
-    public static final double LAUNCHER_TORQUE_NM = 1.0;
-    public static final double ELEVATOR_DRUM_RADIUS = Units.inchesToMeters(2.0);
-    public static final double CARRIAGE_MASS = 4.0; // kg
+    public static final double POUND_IN2_TO_KG_METERS2 =
+        Units.lbsToKilograms(1) * Math.pow(Units.inchesToMeters(1), 2);
+
+    public static final double LAUNCHER_MOI_IN_LBS2 = 4.5;
+    public static final double LAUNCHER_MOI_KG_METERS2 =
+        LAUNCHER_MOI_IN_LBS2 * POUND_IN2_TO_KG_METERS2;
   }
 }

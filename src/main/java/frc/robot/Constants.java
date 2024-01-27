@@ -39,18 +39,14 @@ public final class Constants {
     // public static final int ENCODER_B_CHANNEL = 1;
 
     // Constants tunable through preferences
-    public static final PreferenceKeyValue LAUNCHER_KP = new PreferenceKeyValue("LauncherKP", 15.0);
+    public static final PreferenceKeyValue LAUNCHER_KP =
+        new PreferenceKeyValue("LauncherKP", 6.0d / 1000);
     public static final PreferenceKeyValue LAUNCHER_KS_VOLTS =
-        new PreferenceKeyValue("LauncherKS", 0.1);
+        new PreferenceKeyValue("LauncherKS", 0.0);
     public static final PreferenceKeyValue LAUNCHER_KV_VOLTS_PER_RPM =
-        new PreferenceKeyValue("LauncherKV", 12.0);
+        new PreferenceKeyValue("LauncherKV", 6.0d / 1000);
     public static final PreferenceKeyValue LAUNCHER_KA_VOLTS_PER_RPM2 =
-        new PreferenceKeyValue("LauncherKA", 12.0);
-
-    public static final PreferenceKeyValue LAUNCHER_MAX_VELOCITY_RPM =
-        new PreferenceKeyValue("LauncherVelocityMax", 0.2);
-    public static final PreferenceKeyValue LAUNCHER_MAX_ACCELERATION_METERS_PER_SEC2 =
-        new PreferenceKeyValue("LauncherAccelerationMax", 0.5);
+        new PreferenceKeyValue("LauncherKA", 0.0d / 1000);
 
     private static final PreferenceKeyValue[] LAUNCHER_PREFERENCES = {
       LAUNCHER_KP, LAUNCHER_KS_VOLTS, LAUNCHER_KV_VOLTS_PER_RPM, LAUNCHER_KA_VOLTS_PER_RPM2
@@ -62,7 +58,7 @@ public final class Constants {
 
     public static final double LAUNCHER_GEAR_RATIO =
         3.0; // Ratio of motor rotations to output rotations
-    public static final double LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION = LAUNCHER_GEAR_RATIO;
+    public static final double LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION = 1.0d / LAUNCHER_GEAR_RATIO;
     public static final double LAUNCHER_TOLERANCE_RPM = 20;
     public static final double LAUNCHER_FULL_SPEED = 600;
   }

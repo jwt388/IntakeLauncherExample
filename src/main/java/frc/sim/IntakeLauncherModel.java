@@ -6,6 +6,7 @@ package frc.sim;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.Constants.IntakeLauncherConstants;
 import frc.robot.subsystems.IntakeLauncherSubsystem;
@@ -20,6 +21,12 @@ public class IntakeLauncherModel implements AutoCloseable {
 
   // The arm gearbox represents a gearbox containing one motor.
   private final DCMotor launcherGearbox = DCMotor.getNEO(1);
+
+  private final DCMotorSim launcherMotorSim =
+      new DCMotorSim(
+          launcherGearbox,
+          IntakeLauncherConstants.LAUNCHER_GEAR_RATIO,
+          IntakeLauncherSimConstants.LAUNCHER_MOI_KG_METERS2);
 
   /** Create a new ElevatorModel. */
   public IntakeLauncherModel(IntakeLauncherSubsystem intakeLauncherSubsystemToSimulate) {
@@ -40,15 +47,20 @@ public class IntakeLauncherModel implements AutoCloseable {
   /** Update the simulation model. */
   public void updateSim() {
 
-    // Calculate the speed from the commanded motor voltage
-    double simLauncherSpeed =
-        launcherGearbox.getSpeed(
-            IntakeLauncherSimConstants.LAUNCHER_TORQUE_NM,
-            intakeLauncherSubsystem.getLauncherVoltageCommand());
+    double inputVoltage = intakeLauncherSubsystem.getLauncherVoltageCommand();
+
+    launcherMotorSim.setInput(inputVoltage);
+
+    // Next, we update it. The standard loop time is 20ms.
+    launcherMotorSim.update(0.020);
+
+    double newPosition = launcherMotorSim.getAngularPositionRotations();
+    double simLauncherSpeed = launcherMotorSim.getAngularVelocityRPM();
 
     // Finally, we set our simulated encoder's readings and simulated battery voltage and
     // save the current so it can be retrieved later.
     sparkSim.setVelocity(simLauncherSpeed);
+    sparkSim.setPosition(newPosition);
     simLauncherCurrent =
         launcherGearbox.getCurrent(1.0, intakeLauncherSubsystem.getLauncherVoltageCommand());
     sparkSim.setCurrent(simLauncherCurrent);

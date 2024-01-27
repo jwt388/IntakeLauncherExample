@@ -20,70 +20,63 @@ import frc.robot.Constants.IntakeLauncherConstants;
 import frc.robot.RobotPreferences;
 
 /**
- * The {@code LauncherSubsystem} class is a subsystem that controls the movement of an launcher
- * using a Profiled PID Controller. It uses a CANSparkMax motor and a RelativeEncoder to measure the
- * launcher's position. The class provides methods to move the launcher to a specific position, hold
- * the launcher at the current position, and shift the launcher's position up or down by a fixed
- * increment.
+ * The {@code IntakeLauncherSubsystem} class is a subsystem that controls the speed of a launcher
+ * using a PID Controller and simple motor feedforward. It uses a CANSparkMax motor and a 
+ * RelativeEncoder to measure the launcher's speed. The class provides methods to run the launcher 
+ * at the specified speed, and stop the motor.
  *
- * <p>The LauncherSubsystem class provides a constructor where hardware dependiencies are passed in
- * to allow access for testing. There is also a method provided to create default hardware when
- * those details are not needed outside of the subsystem.
+ * <p>The IntakeLauncherSubsystem class provides a constructor where hardware dependencies are
+ * passed in to allow access for testing. There is also a method provided to create default 
+ * hardware when those details are not needed outside of the subsystem.
  *
  * <p>Example Usage:
  *
  * <pre>{@code
- * // Create a new instance of LauncherSubsystem using specified hardware
+ * // Create a new instance of IntakeLauncherSubsystem using specified hardware
  * CANSparkMax motor = new CANSparkMax(1, MotorType.kBrushless);
  * RelativeEncoder encoder = motor.getEncoder();
- * launcherHardware = new LauncherSubsystem.Hardware(motor, encoder);
- * LauncherSubsystem launcherSubsystem = new LauncherSubsystem(launcherHardware);
+ * launcherHardware = new IntakeLauncherSubsystem.Hardware(motor, encoder);
+ * IntakeLauncherSubsystem launcherSubsystem = new IntakeLauncherSubsystem(launcherHardware);
  *
- * // Create a new instance of LauncherSubsystem using default hardware
- * LauncherSubsystem launcherSubsystem = new LauncherSubsystem(initializeHardware());
+ * // Create a new instance of IntakeLauncherSubsystem using default hardware
+ * IntakeLauncherSubsystem launcherSubsystem = new IntakeLauncherSubsystem(initializeHardware());
  *
- * // Move the launcher to a specific position
- * Command moveToPositionCommand = launcherSubsystem.moveToPosition(1.0);
- * moveToPositionCommand.schedule();
- *
- * // Hold the launcher at the current position
- * Command holdPositionCommand = launcherSubsystem.holdPosition();
- * holdPositionCommand.schedule();
+ * // Run the launcher at a specific speed
+ * Command runLauncherCommand = launcherSubsystem.runLauncher(500.0);
+ * runLauncherCommand.schedule();
  *
  * }
  *
  * Code Analysis:
  * - Main functionalities:
- *   - Control the movement of an launcher using a Profiled PID Controller
- *   - Move the launcher to a specific position
- *   - Hold the launcher at the current position
+ *   - Control the speed of an launcher using a PID Controller
  * - Methods:
  *   - {@code periodic()}: Updates the SmartDashboard with information about the launcher's state.
- *   - {@code useOutput()}: Generates the motor command using the PID controller and feedforward.
- *   - {@code moveToPosition(double goal)}: Returns a Command that moves the launcher to a new position.
- *   - {@code holdPosition()}: Returns a Command that holds the launcher at the last goal position.
- *   - {@code setGoalPosition(double goal)}: Sets the goal state for the subsystem.
- *   - {@code atGoalPosition()}: Returns whether the launcher has reached the goal position.
+ *   - {@code updateLauncherController()}: Generates the motor command using the PID controller and 
+ *     feedforward.
+ *   - {@code runLauncher(double setpoint)}: Returns a Command that runs the launcher at the 
+ *     defined speed.
+ *   - {@code setSetPoint(double goal)}: Set the setpoint for the launcher..
+ *   - {@code atSetpoint()}: Returns whether the launcher has reached the set point velocity 
+ *     within limits.
  *   - {@code enable()}: Enables the PID control of the launcher.
  *   - {@code disable()}: Disables the PID control of the launcher.
- *   - {@code getMeasurement()}: Returns the launcher position for PID control and logging.
- *   - {@code getVoltageCommand()}: Returns the motor commanded voltage.
- *   - {@code initPreferences()}: Initializes the preferences for tuning the controller.
+ *   - {@code getLauncherSpeed()}: Returns the launcher position for PID control and logging.
+ *   - {@code getLauncherVoltageCommand()}: Returns the motor commanded voltage.
  *   - {@code loadPreferences()}: Loads the preferences for tuning the controller.
  *   - {@code close()}: Closes any objects that support it.
  *   - Fields:
  *   - {@code private final CANSparkMax motor}: The motor used to control the launcher.
  *   - {@code private final RelativeEncoder encoder}: The encoder used to measure the launcher's
  *     position.
- *   - {@code private ProfiledPIDController launcherController}: The PID controller used to
- *     control the launcher's movement.
- *   - {@code private launcherFeedforward feedforward}: The feedforward controller used to
+ *   - {@code private PIDController launcherController}: The PID controller used to
+ *     control the launcher's speed.
+ *   - {@code private Feedforward feedforward}: The feedforward controller used to
  *     calculate the motor output.
- *   - {@code private double output}: The output of the PID controller.
- *   - {@code private TrapezoidProfile.State setpoint}: The setpoint of the PID controller.
+ *   - {@code private double pidOutput}: The output of the PID controller.
  *   - {@code private double newFeedforward}: The calculated feedforward value.
  *   - {@code private boolean launcherEnabled}: A flag indicating whether the launcher is enabled.
- *   - {@code private double voltageCommand}: The motor commanded voltage.
+ *   - {@code private double launcherVoltageCommand}: The motor commanded voltage.
  * </pre>
  */
 public class IntakeLauncherSubsystem extends SubsystemBase implements AutoCloseable {
@@ -99,8 +92,8 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
     }
   }
 
-  private final CANSparkMax motor;
-  private final RelativeEncoder encoder;
+  private final CANSparkMax launcherMotor;
+  private final RelativeEncoder launcherEncoder;
 
   private PIDController launcherController =
       new PIDController(IntakeLauncherConstants.LAUNCHER_KP.getValue(), 0.0, 0.0);
@@ -118,8 +111,8 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
 
   /** Create a new LauncherSubsystem controlled by a Profiled PID COntroller . */
   public IntakeLauncherSubsystem(Hardware launcherHardware) {
-    this.motor = launcherHardware.launcherMotor;
-    this.encoder = launcherHardware.launcherEncoder;
+    this.launcherMotor = launcherHardware.launcherMotor;
+    this.launcherEncoder = launcherHardware.launcherEncoder;
 
     initializeLauncher();
   }
@@ -138,21 +131,21 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
   }
 
   private void initMotor() {
-    motor.restoreFactoryDefaults();
+    launcherMotor.restoreFactoryDefaults();
     // Maybe we should print the faults if non-zero before clearing?
-    motor.clearFaults();
+    launcherMotor.clearFaults();
     // Configure the motor to use EMF braking when idle and set voltage to 0.
-    motor.setIdleMode(IdleMode.kBrake);
-    DataLogManager.log("Launcher motor firmware version:" + motor.getFirmwareString());
+    launcherMotor.setIdleMode(IdleMode.kBrake);
+    DataLogManager.log("Launcher motor firmware version:" + launcherMotor.getFirmwareString());
   }
 
   private void initEncoder() {
     // Setup the encoder scale factors and reset encoder to 0. Since this is a relation encoder,
     // launcher position will only be correct if the launcher is in the starting rest position when
     // the subsystem is constructed.
-    encoder.setPositionConversionFactor(
+    launcherEncoder.setPositionConversionFactor(
         IntakeLauncherConstants.LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION);
-    encoder.setVelocityConversionFactor(
+    launcherEncoder.setVelocityConversionFactor(
         IntakeLauncherConstants.LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION);
   }
 
@@ -174,9 +167,10 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
 
     SmartDashboard.putBoolean("Launcher Enabled", launcherEnabled);
     SmartDashboard.putNumber("Launcher Setpoint", launcherController.getSetpoint());
-    SmartDashboard.putNumber("Launcher Velocity", encoder.getVelocity());
+    SmartDashboard.putNumber("Launcher Velocity", launcherEncoder.getVelocity());
+    SmartDashboard.putNumber("Launcher Position", launcherEncoder.getPosition());
     SmartDashboard.putNumber("Launcher Voltage", launcherVoltageCommand);
-    SmartDashboard.putNumber("Launcher Current", motor.getOutputCurrent());
+    SmartDashboard.putNumber("Launcher Current", launcherMotor.getOutputCurrent());
     SmartDashboard.putNumber("Launcher Feedforward", newFeedforward);
     SmartDashboard.putNumber("Launcher PID output", pidOutput);
   }
@@ -198,16 +192,16 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
       newFeedforward = 0;
       launcherVoltageCommand = 0;
     }
-    motor.setVoltage(launcherVoltageCommand);
+    launcherMotor.setVoltage(launcherVoltageCommand);
   }
 
-  /** Returns a Command that runs the launcher at the define speed. */
+  /** Returns a Command that runs the launcher at the defined speed. */
   public Command runLauncher(double setpoint) {
     return new FunctionalCommand(
         () -> setSetPoint(setpoint),
         this::updateLauncherController,
-        interrupted -> {},
-        this::atSetpoint,
+        interrupted -> disable(),
+        () -> false,
         this);
   }
 
@@ -276,7 +270,7 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
 
   /** Returns the launcher speed for PID control and logging (Units are RPM). */
   public double getLauncherSpeed() {
-    return encoder.getVelocity();
+    return launcherEncoder.getVelocity();
   }
 
   /** Returns the launcher motor commanded voltage. */
@@ -303,6 +297,6 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
   /** Close any objects that support it. */
   @Override
   public void close() {
-    motor.close();
+    launcherMotor.close();
   }
 }
