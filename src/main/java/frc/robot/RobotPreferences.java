@@ -45,7 +45,7 @@ public class RobotPreferences {
   public static void resetPreferences() {
 
     // Reset the arm subsystem preferences
-    resetPreferencesArray(Constants.IntakeLauncherConstants.getLauncherPreferences());
+    resetPreferencesArray(Constants.LauncherConstants.getLauncherPreferences());
   }
 
   /** Reset an array of Preferences to default values. */

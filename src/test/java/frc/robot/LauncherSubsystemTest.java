@@ -18,8 +18,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.IntakeLauncherConstants;
-import frc.robot.subsystems.IntakeLauncherSubsystem;
+import frc.robot.Constants.LauncherConstants;
+import frc.robot.subsystems.LauncherSubsystem;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -29,13 +29,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalMatchers;
 
-class IntakeLauncherSubsystemTest {
+class LauncherSubsystemTest {
   private static final double DELTA = 5e-3;
   private Map<String, Double> telemetryDoubleMap = new HashMap<>();
   private Map<String, Boolean> telemetryBooleanMap = new HashMap<>();
 
-  private IntakeLauncherSubsystem.Hardware launcherHardware;
-  private IntakeLauncherSubsystem launcher;
+  private LauncherSubsystem.Hardware launcherHardware;
+  private LauncherSubsystem launcher;
   private CANSparkMax mockMotor;
   private RelativeEncoder mockEncoder;
 
@@ -49,8 +49,8 @@ class IntakeLauncherSubsystemTest {
     RobotPreferences.resetPreferences();
 
     // Create subsystem object using mock hardware
-    launcherHardware = new IntakeLauncherSubsystem.Hardware(mockMotor, mockEncoder);
-    launcher = new IntakeLauncherSubsystem(launcherHardware);
+    launcherHardware = new LauncherSubsystem.Hardware(mockMotor, mockEncoder);
+    launcher = new LauncherSubsystem(launcherHardware);
   }
 
   @AfterEach
@@ -71,7 +71,7 @@ class IntakeLauncherSubsystemTest {
   void testMoveCommand() {
 
     // Create a command to run the launcher then initialize
-    Command runLauncherCommand = launcher.runLauncher(IntakeLauncherConstants.LAUNCHER_FULL_SPEED);
+    Command runLauncherCommand = launcher.runLauncher(LauncherConstants.LAUNCHER_FULL_SPEED);
     runLauncherCommand.initialize();
 
     // Run the periodic method to generate telemetry and verify it was published
@@ -79,9 +79,7 @@ class IntakeLauncherSubsystemTest {
     int numEntries = readTelemetry();
     assertThat(numEntries).isPositive();
     assertEquals(
-        IntakeLauncherConstants.LAUNCHER_FULL_SPEED,
-        telemetryDoubleMap.get("Launcher Setpoint"),
-        DELTA);
+        LauncherConstants.LAUNCHER_FULL_SPEED, telemetryDoubleMap.get("Launcher Setpoint"), DELTA);
 
     // Execute the command to run the controller
     runLauncherCommand.execute();
@@ -91,7 +89,7 @@ class IntakeLauncherSubsystemTest {
     assertThat(telemetryBooleanMap.get("Launcher Enabled")).isTrue();
 
     // When disabled mMotor should be commanded to zero
-    launcher.disable();
+    launcher.disableLauncher();
     launcher.periodic();
     readTelemetry();
     verify(mockMotor, times(2)).setVoltage(0.0);
@@ -111,7 +109,7 @@ class IntakeLauncherSubsystemTest {
 
     // The motor voltage should be set twice: once to 0 when configured and once to a
     // positive value when controller is run.
-    Command runLauncherCommand = launcher.runLauncher(IntakeLauncherConstants.LAUNCHER_FULL_SPEED);
+    Command runLauncherCommand = launcher.runLauncher(LauncherConstants.LAUNCHER_FULL_SPEED);
     runLauncherCommand.initialize();
     runLauncherCommand.execute();
     verify(mockMotor, times(2)).setVoltage(anyDouble());

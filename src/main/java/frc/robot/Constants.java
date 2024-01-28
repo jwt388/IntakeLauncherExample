@@ -26,18 +26,29 @@ public final class Constants {
   // Set to true to log each frame of command execution. To false to disable.
   public static final boolean COMMAND_EXECUTE_LOG = false;
 
-  /** Constants used for the LAUNCHER subsystem. */
-  public static final class IntakeLauncherConstants {
+  /** Constants used for the Launcher subsystem. */
+  public static final class IntakeConstants {
 
-    private IntakeLauncherConstants() {
-      throw new IllegalStateException("LAUNCHERConstants Utility Class");
+    private IntakeConstants() {
+      throw new IllegalStateException("IntakeConstants Utility Class");
     }
 
-    // These are fake gains; in actuality these must be determined individually for each robot
-    public static final int LAUNCHER_MOTOR_PORT = 8;
-    // public static final int ENCODER_A_CHANNEL = 0;
-    // public static final int ENCODER_B_CHANNEL = 1;
+    public static final int INTAKE_MOTOR_PORT = 8;
+    public static final double INTAKE_GEAR_RATIO =
+        1.0; // Ratio of motor rotations to output rotations
+    public static final double INTAKE_COMMAND_VOLTS = 12.0;
+  }
 
+  /** Constants used for the Launcher subsystem. */
+  public static final class LauncherConstants {
+
+    private LauncherConstants() {
+      throw new IllegalStateException("LauncherConstants Utility Class");
+    }
+
+    public static final int LAUNCHER_MOTOR_PORT = 9;
+
+    // These are fake gains; in actuality these must be determined individually for each robot
     // Constants tunable through preferences
     public static final PreferenceKeyValue LAUNCHER_KP =
         new PreferenceKeyValue("LauncherKP", 6.0d / 1000);

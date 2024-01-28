@@ -8,14 +8,14 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import frc.robot.Constants.IntakeLauncherConstants;
-import frc.robot.subsystems.IntakeLauncherSubsystem;
-import frc.sim.Constants.IntakeLauncherSimConstants;
+import frc.robot.Constants.LauncherConstants;
+import frc.robot.subsystems.LauncherSubsystem;
+import frc.sim.Constants.LauncherSimConstants;
 
 /** A robot arm simulation based on a linear system model with Mech2d display. */
-public class IntakeLauncherModel implements AutoCloseable {
+public class LauncherModel implements AutoCloseable {
 
-  private final IntakeLauncherSubsystem intakeLauncherSubsystem;
+  private final LauncherSubsystem intakeLauncherSubsystem;
   private double simLauncherCurrent = 0.0;
   private CANSparkMaxSim sparkSim;
 
@@ -25,11 +25,11 @@ public class IntakeLauncherModel implements AutoCloseable {
   private final DCMotorSim launcherMotorSim =
       new DCMotorSim(
           launcherGearbox,
-          IntakeLauncherConstants.LAUNCHER_GEAR_RATIO,
-          IntakeLauncherSimConstants.LAUNCHER_MOI_KG_METERS2);
+          LauncherConstants.LAUNCHER_GEAR_RATIO,
+          LauncherSimConstants.LAUNCHER_MOI_KG_METERS2);
 
   /** Create a new ElevatorModel. */
-  public IntakeLauncherModel(IntakeLauncherSubsystem intakeLauncherSubsystemToSimulate) {
+  public LauncherModel(LauncherSubsystem intakeLauncherSubsystemToSimulate) {
 
     intakeLauncherSubsystem = intakeLauncherSubsystemToSimulate;
     simulationInit();
@@ -41,7 +41,7 @@ public class IntakeLauncherModel implements AutoCloseable {
   public void simulationInit() {
 
     // Setup a simulation of the CANSparkMax and methods to set values
-    sparkSim = new CANSparkMaxSim(IntakeLauncherConstants.LAUNCHER_MOTOR_PORT);
+    sparkSim = new CANSparkMaxSim(LauncherConstants.LAUNCHER_MOTOR_PORT);
   }
 
   /** Update the simulation model. */

@@ -20,7 +20,8 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.IntakeLauncherSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LauncherSubsystem;
 import java.util.Map;
 
 /** The DataLogging class contains all the logic for using telemetry. */
@@ -34,7 +35,6 @@ public class DataLogging {
   private boolean prevDsConnectState;
   private ShuffleboardTab sbDriverTab;
   private Field2d sbField;
-  private IntakeLauncherSubsystem elevator;
 
   private DataLogging() {
     // Starts recording to data log
@@ -155,18 +155,18 @@ public class DataLogging {
    */
   public void dataLogRobotContainerInit(RobotContainer robotContainer) {
 
-    PowerDistribution pdp;
-    pdp = robotContainer.getPdp();
-    elevator = robotContainer.getElevatorSubsystem();
+    PowerDistribution pdp = robotContainer.getPdp();
+    IntakeSubsystem intake = robotContainer.getIntakeSubsystem();
+    LauncherSubsystem launcher = robotContainer.getLauncherSubsystem();
 
     // Add widgets to the Commands tab
     sbCommandsTab.add(CommandScheduler.getInstance()).withSize(3, 2);
-    sbCommandsTab.add(elevator).withSize(3, 1);
+    sbCommandsTab.add(intake).withSize(3, 1);
+    sbCommandsTab.add(launcher).withSize(3, 1);
 
     // Add widgets to the Driver tab
 
     // Add hardware sendables here
-    // sbRobotTab.add("PDP", pdp).withWidget(BuiltInWidgets.kPowerDistribution)
     pdpWidget.add("PDP", pdp);
 
     // Log configuration info here

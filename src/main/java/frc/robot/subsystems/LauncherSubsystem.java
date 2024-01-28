@@ -16,30 +16,30 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.IntakeLauncherConstants;
+import frc.robot.Constants.LauncherConstants;
 import frc.robot.RobotPreferences;
 
 /**
- * The {@code IntakeLauncherSubsystem} class is a subsystem that controls the speed of a launcher
- * using a PID Controller and simple motor feedforward. It uses a CANSparkMax motor and a 
- * RelativeEncoder to measure the launcher's speed. The class provides methods to run the launcher 
- * at the specified speed, and stop the motor.
+ * The {@code LauncherSubsystem} class is a subsystem that controls the speed of a launcher using a
+ * PID Controller and simple motor feedforward. It uses a CANSparkMax motor and a RelativeEncoder to
+ * measure the launcher's speed. The class provides methods to run the launcher at the specified
+ * speed, and stop the motor.
  *
- * <p>The IntakeLauncherSubsystem class provides a constructor where hardware dependencies are
- * passed in to allow access for testing. There is also a method provided to create default 
- * hardware when those details are not needed outside of the subsystem.
+ * <p>The LauncherSubsystem class provides a constructor where hardware dependencies are passed in
+ * to allow access for testing. There is also a method provided to create default hardware when
+ * those details are not needed outside of the subsystem.
  *
  * <p>Example Usage:
  *
  * <pre>{@code
- * // Create a new instance of IntakeLauncherSubsystem using specified hardware
+ * // Create a new instance of LauncherSubsystem using specified hardware
  * CANSparkMax motor = new CANSparkMax(1, MotorType.kBrushless);
  * RelativeEncoder encoder = motor.getEncoder();
- * launcherHardware = new IntakeLauncherSubsystem.Hardware(motor, encoder);
- * IntakeLauncherSubsystem launcherSubsystem = new IntakeLauncherSubsystem(launcherHardware);
+ * launcherHardware = new LauncherSubsystem.Hardware(motor, encoder);
+ * LauncherSubsystem launcherSubsystem = new LauncherSubsystem(launcherHardware);
  *
- * // Create a new instance of IntakeLauncherSubsystem using default hardware
- * IntakeLauncherSubsystem launcherSubsystem = new IntakeLauncherSubsystem(initializeHardware());
+ * // Create a new instance of LauncherSubsystem using default hardware
+ * LauncherSubsystem launcherSubsystem = new LauncherSubsystem(initializeHardware());
  *
  * // Run the launcher at a specific speed
  * Command runLauncherCommand = launcherSubsystem.runLauncher(500.0);
@@ -52,12 +52,12 @@ import frc.robot.RobotPreferences;
  *   - Control the speed of an launcher using a PID Controller
  * - Methods:
  *   - {@code periodic()}: Updates the SmartDashboard with information about the launcher's state.
- *   - {@code updateLauncherController()}: Generates the motor command using the PID controller and 
+ *   - {@code updateLauncherController()}: Generates the motor command using the PID controller and
  *     feedforward.
- *   - {@code runLauncher(double setpoint)}: Returns a Command that runs the launcher at the 
+ *   - {@code runLauncher(double setpoint)}: Returns a Command that runs the launcher at the
  *     defined speed.
  *   - {@code setSetPoint(double goal)}: Set the setpoint for the launcher..
- *   - {@code atSetpoint()}: Returns whether the launcher has reached the set point velocity 
+ *   - {@code atSetpoint()}: Returns whether the launcher has reached the set point velocity
  *     within limits.
  *   - {@code enable()}: Enables the PID control of the launcher.
  *   - {@code disable()}: Disables the PID control of the launcher.
@@ -79,7 +79,7 @@ import frc.robot.RobotPreferences;
  *   - {@code private double launcherVoltageCommand}: The motor commanded voltage.
  * </pre>
  */
-public class IntakeLauncherSubsystem extends SubsystemBase implements AutoCloseable {
+public class LauncherSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Hardware components for the launcher subsystem. */
   public static class Hardware {
@@ -96,13 +96,13 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
   private final RelativeEncoder launcherEncoder;
 
   private PIDController launcherController =
-      new PIDController(IntakeLauncherConstants.LAUNCHER_KP.getValue(), 0.0, 0.0);
+      new PIDController(LauncherConstants.LAUNCHER_KP.getValue(), 0.0, 0.0);
 
   SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(
-          IntakeLauncherConstants.LAUNCHER_KS_VOLTS.getValue(),
-          IntakeLauncherConstants.LAUNCHER_KV_VOLTS_PER_RPM.getValue(),
-          IntakeLauncherConstants.LAUNCHER_KA_VOLTS_PER_RPM2.getValue());
+          LauncherConstants.LAUNCHER_KS_VOLTS.getValue(),
+          LauncherConstants.LAUNCHER_KV_VOLTS_PER_RPM.getValue(),
+          LauncherConstants.LAUNCHER_KA_VOLTS_PER_RPM2.getValue());
 
   private double pidOutput = 0.0;
   private double newFeedforward = 0;
@@ -110,7 +110,7 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
   private double launcherVoltageCommand = 0.0;
 
   /** Create a new LauncherSubsystem controlled by a Profiled PID COntroller . */
-  public IntakeLauncherSubsystem(Hardware launcherHardware) {
+  public LauncherSubsystem(Hardware launcherHardware) {
     this.launcherMotor = launcherHardware.launcherMotor;
     this.launcherEncoder = launcherHardware.launcherEncoder;
 
@@ -119,18 +119,18 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
 
   private void initializeLauncher() {
 
-    RobotPreferences.initPreferencesArray(IntakeLauncherConstants.getLauncherPreferences());
+    RobotPreferences.initPreferencesArray(LauncherConstants.getLauncherPreferences());
 
-    initEncoder();
-    initMotor();
+    initLauncherEncoder();
+    initLauncherMotor();
 
     // Set tolerances that will be used to determine when the launcher is at the goal velocity.
-    launcherController.setTolerance(IntakeLauncherConstants.LAUNCHER_TOLERANCE_RPM);
+    launcherController.setTolerance(LauncherConstants.LAUNCHER_TOLERANCE_RPM);
 
-    disable();
+    disableLauncher();
   }
 
-  private void initMotor() {
+  private void initLauncherMotor() {
     launcherMotor.restoreFactoryDefaults();
     // Maybe we should print the faults if non-zero before clearing?
     launcherMotor.clearFaults();
@@ -139,14 +139,14 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
     DataLogManager.log("Launcher motor firmware version:" + launcherMotor.getFirmwareString());
   }
 
-  private void initEncoder() {
+  private void initLauncherEncoder() {
     // Setup the encoder scale factors and reset encoder to 0. Since this is a relation encoder,
     // launcher position will only be correct if the launcher is in the starting rest position when
     // the subsystem is constructed.
     launcherEncoder.setPositionConversionFactor(
-        IntakeLauncherConstants.LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION);
+        LauncherConstants.LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION);
     launcherEncoder.setVelocityConversionFactor(
-        IntakeLauncherConstants.LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION);
+        LauncherConstants.LAUNCHER_ROTATIONS_PER_ENCODER_ROTATION);
   }
 
   /**
@@ -156,7 +156,7 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
    */
   public static Hardware initializeHardware() {
     CANSparkMax launcherMotor =
-        new CANSparkMax(IntakeLauncherConstants.LAUNCHER_MOTOR_PORT, MotorType.kBrushless);
+        new CANSparkMax(LauncherConstants.LAUNCHER_MOTOR_PORT, MotorType.kBrushless);
     RelativeEncoder launcherEncoder = launcherMotor.getEncoder();
 
     return new Hardware(launcherMotor, launcherEncoder);
@@ -168,7 +168,6 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
     SmartDashboard.putBoolean("Launcher Enabled", launcherEnabled);
     SmartDashboard.putNumber("Launcher Setpoint", launcherController.getSetpoint());
     SmartDashboard.putNumber("Launcher Velocity", launcherEncoder.getVelocity());
-    SmartDashboard.putNumber("Launcher Position", launcherEncoder.getPosition());
     SmartDashboard.putNumber("Launcher Voltage", launcherVoltageCommand);
     SmartDashboard.putNumber("Launcher Current", launcherMotor.getOutputCurrent());
     SmartDashboard.putNumber("Launcher Feedforward", newFeedforward);
@@ -198,9 +197,9 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
   /** Returns a Command that runs the launcher at the defined speed. */
   public Command runLauncher(double setpoint) {
     return new FunctionalCommand(
-        () -> setSetPoint(setpoint),
+        () -> setLauncherSetPoint(setpoint),
         this::updateLauncherController,
-        interrupted -> disable(),
+        interrupted -> disableLauncher(),
         () -> false,
         this);
   }
@@ -209,23 +208,23 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
    * Set the setpoint for the launcher. The PIDController drives the launcher to this speed and
    * holds it there.
    */
-  private void setSetPoint(double setpoint) {
+  private void setLauncherSetPoint(double setpoint) {
     launcherController.setSetpoint(setpoint);
 
     // Call enable() to configure and start the controller in case it is not already enabled.
-    enable();
+    enableLauncher();
   }
 
-  /** Returns whether the launcher has reached the set point velocity within limits. */
-  public boolean atSetpoint() {
+  /** Returns whether the launcher has reached the set point speed within limits. */
+  public boolean launcherAtSetpoint() {
     return launcherController.atSetpoint();
   }
 
   /**
-   * Sets up the PID controller to run the launcher at the defined setpoint velocity. Preferences
-   * for tuning the controller are applied.
+   * Sets up the PID controller to run the launcher at the defined setpoint speed. Preferences for
+   * tuning the controller are applied.
    */
-  private void enable() {
+  private void enableLauncher() {
 
     // Don't enable if already enabled since this may cause control transients
     if (!launcherEnabled) {
@@ -254,7 +253,7 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
    * launcher will slow down until it stops. Motor EMF braking will cause it to slow down faster if
    * that mode is used.
    */
-  public void disable() {
+  public void disableLauncher() {
 
     // Clear the enabled flag and update the controller to zero the motor command
     launcherEnabled = false;
@@ -285,12 +284,12 @@ public class IntakeLauncherSubsystem extends SubsystemBase implements AutoClosea
   private void loadPreferences() {
 
     // Read Preferences for PID controller
-    launcherController.setP(IntakeLauncherConstants.LAUNCHER_KP.getValue());
+    launcherController.setP(LauncherConstants.LAUNCHER_KP.getValue());
 
     // Read Preferences for Feedforward and create a new instance
-    double staticGain = IntakeLauncherConstants.LAUNCHER_KS_VOLTS.getValue();
-    double velocityGain = IntakeLauncherConstants.LAUNCHER_KV_VOLTS_PER_RPM.getValue();
-    double accelerationGain = IntakeLauncherConstants.LAUNCHER_KA_VOLTS_PER_RPM2.getValue();
+    double staticGain = LauncherConstants.LAUNCHER_KS_VOLTS.getValue();
+    double velocityGain = LauncherConstants.LAUNCHER_KV_VOLTS_PER_RPM.getValue();
+    double accelerationGain = LauncherConstants.LAUNCHER_KA_VOLTS_PER_RPM2.getValue();
     feedforward = new SimpleMotorFeedforward(staticGain, velocityGain, accelerationGain);
   }
 

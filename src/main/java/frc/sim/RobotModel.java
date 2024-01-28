@@ -13,9 +13,13 @@ public class RobotModel {
 
   PDPSim simpdp;
 
-  // Mechanical elevator driven by motor with gear reduction for simulation purposes.
-  // Works in conjunction with ElevatorSubsystem
-  IntakeLauncherModel simElevator;
+  // Mechanical intake driven by motor with gear reduction for simulation purposes.
+  // Works in conjunction with LauncherSubsystem
+  IntakeModel simIntake;
+
+  // Mechanical launcher driven by motor with gear reduction for simulation purposes.
+  // Works in conjunction with LauncherSubsystem
+  LauncherModel simLauncher;
 
   Random random = new Random();
   private final boolean isReal;
@@ -39,7 +43,9 @@ public class RobotModel {
       return;
     }
 
-    simElevator = new IntakeLauncherModel(robot.getRobotContainer().getElevatorSubsystem());
+    simLauncher = new LauncherModel(robot.getRobotContainer().getLauncherSubsystem());
+
+    simIntake = new IntakeModel(robot.getRobotContainer().getIntakeSubsystem());
 
     simpdp = new PDPSim(robot.getRobotContainer().getPdp());
     reset();
@@ -52,10 +58,11 @@ public class RobotModel {
     }
 
     // Update subsystem simulations
-    simElevator.updateSim();
+    simIntake.updateSim();
+    simLauncher.updateSim();
 
     // Simulate battery voltage drop based on total simulated current
-    double elevatorCurrent = Math.abs(simElevator.getSimCurrent());
+    double elevatorCurrent = Math.abs(simLauncher.getSimCurrent());
 
     double[] simCurrents = {elevatorCurrent};
 

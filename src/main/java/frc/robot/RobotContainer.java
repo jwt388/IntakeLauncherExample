@@ -11,7 +11,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
-import frc.robot.subsystems.IntakeLauncherSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LauncherSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,9 +31,12 @@ public class RobotContainer {
       new CommandXboxController(OIConstants.OPERATOR_CONTROLLER_PORT);
 
   // Now all the subsystems.
-  // The Intake/Launcher.
-  private final IntakeLauncherSubsystem robotLauncher =
-      new IntakeLauncherSubsystem(IntakeLauncherSubsystem.initializeHardware());
+  // The Intake and Launcher.
+  private final LauncherSubsystem robotLauncher =
+      new LauncherSubsystem(LauncherSubsystem.initializeHardware());
+
+  private final IntakeSubsystem robotIntake =
+      new IntakeSubsystem(IntakeSubsystem.initializeHardware());
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -48,18 +52,24 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // Run the launcher at the defined speed while the right trigger is pressed.
+    // Run the launcher at the defined speed while the right trigger is held.
     operatorController
         .rightTrigger()
         .whileTrue(
             robotLauncher
-                .runLauncher(Constants.IntakeLauncherConstants.LAUNCHER_FULL_SPEED)
+                .runLauncher(Constants.LauncherConstants.LAUNCHER_FULL_SPEED)
                 .withName("Launcher: Run Full Speed"));
 
-    // Stop the launcher when the right trigger is released.
-    // operatorController
-    //     .rightTrigger()
-    //     .onFalse(robotLauncher.runLauncher(0).withName("Launcher: Stop"));
+    // Start the intake when the left bumper is pressed.
+    operatorController
+        .leftBumper()
+        .onTrue(
+            robotIntake
+                .runIntake(Constants.IntakeConstants.INTAKE_COMMAND_VOLTS)
+                .withName("Intake: Run"));
+
+    // Stop the intake when the right bumper is pressed.
+    operatorController.rightBumper().onTrue(robotIntake.stopIntake().withName("Intake: Stop"));
   }
 
   /**
@@ -68,7 +78,8 @@ public class RobotContainer {
    * simulation matches RoboRio behavior. Commands are canceled at the Robot level.
    */
   public void disableSubsystems() {
-    robotLauncher.disable();
+    robotIntake.disableIntake();
+    robotLauncher.disableLauncher();
     DataLogManager.log("disableSubsystems");
   }
 
@@ -92,11 +103,20 @@ public class RobotContainer {
   }
 
   /**
-   * Use this to get the Elevator Subsystem.
+   * Use this to get the Intake Subsystem.
    *
-   * @return the command to run in autonomous
+   * @return a reference to the Intake Subsystem
    */
-  public IntakeLauncherSubsystem getElevatorSubsystem() {
+  public IntakeSubsystem getIntakeSubsystem() {
+    return robotIntake;
+  }
+
+  /**
+   * Use this to get the Launcher Subsystem.
+   *
+   * @return a reference to the Launcher Subsystem
+   */
+  public LauncherSubsystem getLauncherSubsystem() {
     return robotLauncher;
   }
 }
