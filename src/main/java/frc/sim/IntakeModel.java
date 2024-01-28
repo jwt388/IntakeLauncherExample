@@ -53,7 +53,6 @@ public class IntakeModel implements AutoCloseable {
     // Next, we update it. The standard loop time is 20ms.
     intakeMotorSim.update(0.020);
 
-    double newPosition = intakeMotorSim.getAngularPositionRotations();
     double simIntakeSpeed = intakeMotorSim.getAngularVelocityRPM();
 
     // Finally, we set our simulated encoder's readings and simulated battery voltage and
