@@ -22,8 +22,8 @@ import frc.robot.RobotPreferences;
 /**
  * The {@code LauncherSubsystem} class is a subsystem that controls the speed of a launcher using a
  * PID Controller and simple motor feedforward. It uses a CANSparkMax motor and a RelativeEncoder to
- * measure the launcher's speed. The class provides methods to run the launcher at the specified
- * speed, and stop the motor.
+ * measure the launcher's speed. The class provides methods to return commands that run the launcher
+ * at the specified speed or stop the motor.
  *
  * <p>The LauncherSubsystem class provides a constructor where hardware dependencies are passed in
  * to allow access for testing. There is also a method provided to create default hardware when
@@ -83,12 +83,12 @@ public class LauncherSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Hardware components for the launcher subsystem. */
   public static class Hardware {
-    CANSparkMax launcherMotor;
-    RelativeEncoder launcherEncoder;
+    CANSparkMax motor;
+    RelativeEncoder encoder;
 
-    public Hardware(CANSparkMax launcherMotor, RelativeEncoder launcherEncoder) {
-      this.launcherMotor = launcherMotor;
-      this.launcherEncoder = launcherEncoder;
+    public Hardware(CANSparkMax motor, RelativeEncoder encoder) {
+      this.motor = motor;
+      this.encoder = encoder;
     }
   }
 
@@ -111,8 +111,8 @@ public class LauncherSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Create a new LauncherSubsystem controlled by a Profiled PID COntroller . */
   public LauncherSubsystem(Hardware launcherHardware) {
-    this.launcherMotor = launcherHardware.launcherMotor;
-    this.launcherEncoder = launcherHardware.launcherEncoder;
+    this.launcherMotor = launcherHardware.motor;
+    this.launcherEncoder = launcherHardware.encoder;
 
     initializeLauncher();
   }
